@@ -98,10 +98,11 @@ class BRender:
             os.makedirs(self.outputPath, exist_ok=True)
 
         # Construct cmd
+        output_pattern = os.path.join(self.outputPath, "####")
         cmd = [
             self.blenderPath, "--background",
             self.inputPath,
-            "-o", self.outputPath,
+            "-o", output_pattern,
             "-F", self.fileType,
             "-s", str(self.startFrame),
             "-e", str(self.endFrame),

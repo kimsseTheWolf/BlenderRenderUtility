@@ -5,16 +5,32 @@ import json
 import sys
 import butil
 
+# For prettier display
+import time
+from rich.console import Console, Group
+from rich.panel import Panel
+from rich.progress import (
+    Progress,
+    BarColumn,
+    TaskProgressColumn,
+)
+from rich.table import Table
+from rich.text import Text
+from rich.live import Live
+
 # Import configs from json config file
 CONFIG_DATA_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), "config.json")
 VERSION = "1.0"
+
+# Rich console
+console = Console()
 
 def promptCreateConfig():
 
     # Create new config file, prompt user to fill in data.
     print("SETUP Brenderer")
     blender_path = inquirer.filepath(
-        message="Enter the path to your blender executable. (If it is already in path, enter the command here)",
+        message="Enter the path to your blender executable.",
         default="/home/$user/Documents/blender/blender"
     ).execute()
 
@@ -24,7 +40,7 @@ def promptCreateConfig():
     ).execute()
 
     output_path = inquirer.filepath(
-        message="Enter the foldvideo_framerateer to store all rendered artifacts.",
+        message="Enter the folder to store all rendered artifacts.",
         default="/home/$user/Documents/blender_render_result"
     ).execute()
 
@@ -51,11 +67,16 @@ def promptNewRenderJob()->tuple[butil.BRender, dict]:
     try:
         blend_folder = Path(CONFIG_DATA["input_path"])
         blend_files = [str(path) for path in blend_folder.iterdir() if path.is_file()]
-    except:
+    except Exception as e:
         print("Fetch blend files FAILED. Fix your input_path in your config file.")
+        print(e.with_traceback())
 
     input_path = ""
-    if not blend_files is None:
+    if blend_files is None:
+        input_path = inquirer.filepath(
+            message="Choose the location of your blend file"
+        ).execute()
+    else:
         blend_files.append("Other...")
         input_path = inquirer.fuzzy(
             message="Choose a blend file:",
@@ -157,17 +178,114 @@ def printJobSubmitSummary(
     print(f"FPS      : {vid_framerate} fps")
     print("========================================")
 
+def printJobStatusPanel(job:butil.BRender, progress:Progress, progressTask, elapsed):
+    status = job.getStatus()
+
+    # Update progress bar
+    progress.update(progressTask, completed=status["progress"] * 100)
+
+    # File name
+    title = Text(
+        job.inputPath.split("/")[-1],
+        style="bold"
+    )
+
+    # State
+    state = Text(
+        status["state"].capitalize(),
+        style="bold green"
+    )
+
+    # Data table
+    info = Table.grid(
+        padding=(0, 2)
+    )
+
+    info.add_column(style="bold")
+    info.add_column()
+
+    info.add_row(
+        "Frame",
+        f"{status['frame']} / {status['endFrame']}"
+    )
+
+    info.add_row(
+        "Samples",
+        f"{status['sample']} / {status['totalSamples']}"
+    )
+
+    info.add_row(
+        "Elapsed",
+        time.strftime(
+            "%H:%M:%S",
+            time.gmtime(elapsed)
+        )
+    )
+
+    info.add_row(
+        "Output",
+        job.outputPath
+    )
+
+    # Combine everything
+    content = Group(
+        title,
+        Text(""),
+        state,
+        progress,
+        Text(""),
+        info
+    )
+
+    return Panel(
+        content,
+        title="BRender",
+        border_style="blue",
+        padding=(1, 2)
+    )
+
 def submitRenderJob(job:butil.BRender):
 
     job.render()
 
-    # Display data here. WIP
-    while job.getStatus()["state"] == "rendering":
-        print("job is still rendering")
+    progress = Progress(
+        BarColumn(),
+        TaskProgressColumn(),
+        expand=True,
+        auto_refresh=False
+    )
+
+    progressTask = progress.add_task(
+        "Rendering",
+        total=100
+    )
+
+    startTime = time.time()
+
+    with Live(refresh_per_second=10, console=console) as live:
+
+        while True:
+            status = job.getStatus()
+
+            elapsed = time.time() - startTime
+
+            display = printJobStatusPanel(
+                job,
+                progress,
+                progressTask,
+                elapsed
+            )
+
+            live.update(display)
+
+            if status["state"] != "rendering":
+                break
+
+            time.sleep(0.5)
 
     # Print post-job information. WIP
-    print(f"Job status: {job.getStatus()["state"]}")
-    print(f"Framew has been stored to: {job.outputPath}")
+    print(f"Job finished with status: {job.getStatus()["state"]}")
+    print(f"Frame has been stored to: {job.outputPath}")
 
 
 if __name__ == "__main__":
@@ -182,21 +300,24 @@ if __name__ == "__main__":
     with open(CONFIG_DATA_PATH, "r", encoding="utf-8") as cfg:
         try:
             CONFIG_DATA = json.load(cfg)
-        except:
+        except Exception as e:
             print("Invalid config file. Check if there is a typo for json structure? Also use `brender config` to edit config file.")
+            print(e.with_traceback())
             sys.exit(1)
 
     # Check passed in parameters, to see what operations the program will proceed?
 
     if len(sys.argv) == 1:
-        # Initiate render job prompt
-        try:
-            new_job = promptNewRenderJob()
-        except Exception:
-            sys.exit(1)
-
-        
+        # Initiate render job prompt. Will have try/except after development
+        (new_job, vid_job) = promptNewRenderJob()
         submitRenderJob(new_job)
+        sys.exit(0)
+
+        # Submit the job
+        submitRenderJob(new_job)
+
+        # Video jobs comes after. WIP
+
         pass
     elif len(sys.argv) >= 2:
         # Check the sub-command and arguments to performe other actions.WIP
