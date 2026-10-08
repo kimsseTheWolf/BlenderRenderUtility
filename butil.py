@@ -94,7 +94,7 @@ class BRender:
         if presult != (True, True):
             raise TargetNotExistsError("Blender executable or target blend file missing!")
 
-        if os.path.exists(self.outputPath):
+        if not os.path.exists(self.outputPath):
             os.makedirs(self.outputPath, exist_ok=True)
 
         # Construct cmd
