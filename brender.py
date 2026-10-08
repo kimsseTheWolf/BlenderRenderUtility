@@ -188,7 +188,7 @@ if __name__ == "__main__":
 
     # Check passed in parameters, to see what operations the program will proceed?
 
-    if len(sys.argv) == 2:
+    if len(sys.argv) == 1:
         # Initiate render job prompt
         try:
             new_job = promptNewRenderJob()
@@ -198,7 +198,7 @@ if __name__ == "__main__":
         
         submitRenderJob(new_job)
         pass
-    elif len(sys.argv) > 2:
+    elif len(sys.argv) >= 2:
         # Check the sub-command and arguments to performe other actions.WIP
         pass
     else:
