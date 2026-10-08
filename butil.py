@@ -58,7 +58,7 @@ class BRender:
             line
         )
 
-        if frameMatch:
+        if currSampleMatch:
             self.__currentSamples = int(currSampleMatch.group(1))
             self.__totalSamples = int(currSampleMatch.group(2))
 
