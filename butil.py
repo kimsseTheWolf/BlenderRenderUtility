@@ -45,7 +45,7 @@ class BRender:
 
         # Current frame
         frameMatch = re.search(
-            r"Fra:(\d+)",
+            r"Fra:\s*(\d+)",
             line
         )
 
