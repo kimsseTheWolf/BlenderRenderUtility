@@ -31,17 +31,17 @@ def promptCreateConfig():
     print("SETUP Brenderer")
     blender_path = inquirer.filepath(
         message="Enter the path to your blender executable.",
-        default="/home/$user/Documents/blender/blender"
+        default="~/Documents/blender/blender"
     ).execute()
 
     input_path = inquirer.filepath(
         message="Enter the folder to read all .blend files. (If left empty, you have to manually indicate the location every time)",
-        default="/home/$user/Documents/blender_render_pool"
+        default="~/Documents/blender_render_pool"
     ).execute()
 
     output_path = inquirer.filepath(
         message="Enter the folder to store all rendered artifacts.",
-        default="/home/$user/Documents/blender_render_result"
+        default="~/Documents/blender_render_result"
     ).execute()
 
     # Compile information and write to config.json
