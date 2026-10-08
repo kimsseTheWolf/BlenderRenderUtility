@@ -191,12 +191,12 @@ if __name__ == "__main__":
     if len(sys.argv) == 2:
         # Initiate render job prompt
         try:
-            promptNewRenderJob()
+            new_job = promptNewRenderJob()
         except Exception:
             sys.exit(1)
 
         
-        submitRenderJob()
+        submitRenderJob(new_job)
         pass
     elif len(sys.argv) > 2:
         # Check the sub-command and arguments to performe other actions.WIP
