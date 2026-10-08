@@ -6,7 +6,7 @@ import sys
 import butil
 
 # Import configs from json config file
-CONFIG_DATA_PATH = os.path.join(__file__, "config.json")
+CONFIG_DATA_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), "config.json")
 VERSION = "1.0"
 
 def promptCreateConfig():
@@ -24,9 +24,9 @@ def promptCreateConfig():
     ).execute()
 
     output_path = inquirer.filepath(
-        message="Enter the folder to store all rendered artifacts.",
+        message="Enter the foldvideo_framerateer to store all rendered artifacts.",
         default="/home/$user/Documents/blender_render_result"
-    )
+    ).execute()
 
     # Compile information and write to config.json
     with open(CONFIG_DATA_PATH, "w", encoding="utf-8") as cfg:
@@ -110,14 +110,14 @@ def promptNewRenderJob()->tuple[butil.BRender, dict]:
             default="24",
             validate=lambda value: value.isdigit(),
             invalid_message="This field has to be a number."
-        )
+        ).execute()
 
     # Print summary, and ask for user confirmation
     printJobSubmitSummary(input_path, output_path, start_frame, end_frame, file_type, generate_video, video_framerate)
     start_job_confirm = inquirer.confirm(
         message="Is the information above CORRECT? If confirmed, brender will start your job immediately!",
         default=True
-    )
+    ).execute()
 
     # Terminate this operation if not confirmed. Otherwise return a generated BRender Object
     if not start_job_confirm:
