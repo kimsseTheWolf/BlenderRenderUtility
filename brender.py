@@ -69,7 +69,7 @@ def promptNewRenderJob()->tuple[butil.BRender, dict]:
         blend_files = [str(path) for path in blend_folder.iterdir() if path.is_file()]
     except Exception as e:
         print("Fetch blend files FAILED. Fix your input_path in your config file.")
-        print(e.with_traceback())
+        print(e)
 
     input_path = ""
     if blend_files is None:
@@ -302,7 +302,7 @@ if __name__ == "__main__":
             CONFIG_DATA = json.load(cfg)
         except Exception as e:
             print("Invalid config file. Check if there is a typo for json structure? Also use `brender config` to edit config file.")
-            print(e.with_traceback())
+            print(e)
             sys.exit(1)
 
     # Check passed in parameters, to see what operations the program will proceed?
@@ -310,14 +310,13 @@ if __name__ == "__main__":
     if len(sys.argv) == 1:
         # Initiate render job prompt. Will have try/except after development
         (new_job, vid_job) = promptNewRenderJob()
-        submitRenderJob(new_job)
-        sys.exit(0)
 
         # Submit the job
         submitRenderJob(new_job)
 
-        # Video jobs comes after. WIP
+        # Process the video job WIP
 
+        sys.exit(0)
         pass
     elif len(sys.argv) >= 2:
         # Check the sub-command and arguments to performe other actions.WIP
