@@ -106,6 +106,7 @@ class BRender:
             "-F", self.fileType,
             "-s", str(self.startFrame),
             "-e", str(self.endFrame),
+            "--python-expr", "import bpy; bpy.context.scene.render.use_simplify = False;",
             "-a"
         ]
 
