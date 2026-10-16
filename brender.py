@@ -4,6 +4,7 @@ import os
 import json
 import sys
 import butil
+import videoutil as vutil
 
 # For prettier display
 import time
@@ -315,6 +316,21 @@ if __name__ == "__main__":
         submitRenderJob(new_job)
 
         # Process the video job WIP
+        if not vid_job["do_video"]:
+            sys.exit(0)
+        try:
+            vutil.renderGIF(
+                new_job.outputPath, 
+                new_job.startFrame, 
+                new_job.endFrame, 
+                vid_job["fps"],
+                new_job.fileType
+            )
+            print("Video job done!")
+        except Exception as e:
+            print("Video job failed. Refer to previous output for more information.")
+            print(e)
+            sys.exit(1)
 
         sys.exit(0)
         pass
